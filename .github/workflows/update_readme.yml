@@ -1,0 +1,40 @@
+name: 🔄 Auto-Update README
+
+on:
+  push:
+    branches: ["**"]          # triggers on every push to any branch
+  workflow_dispatch:          # lets you trigger it manually from the Actions tab
+
+permissions:
+  contents: write             # needed to commit back to the repo
+
+jobs:
+  update-readme:
+    name: Regenerate README
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Checkout the full repo
+      - name: ⬇️ Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0      # full history so git log works correctly
+
+      # 2. Set up Python (no third-party deps needed)
+      - name: 🐍 Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      # 3. Run the generator
+      - name: 📝 Generate README
+        run: python generate_readme.py
+
+      # 4. Commit & push if anything changed
+      - name: 📤 Commit updated README
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "docs: auto-update README [skip ci]"
+          file_pattern: README.md
+          commit_user_name: "github-actions[bot]"
+          commit_user_email: "github-actions[bot]@users.noreply.github.com"
